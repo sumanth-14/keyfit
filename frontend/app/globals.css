@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/*
+  Keyfit — "warm classic / paper" design system.
+  Solid colors only. No gradients anywhere (project rule).
+  Palette: warm off-white paper, charcoal ink, single emerald accent.
+*/
+@theme {
+  /* Surfaces */
+  --color-paper: #faf8f4; /* page background */
+  --color-paper-raised: #fffdf9; /* cards, raised panels */
+
+  /* Text — warm charcoal scale */
+  --color-ink: #292524; /* primary text */
+  --color-ink-soft: #57534e; /* secondary text */
+  --color-ink-faint: #a8a29e; /* tertiary / captions */
+
+  /* Lines & accent */
+  --color-line: #e9e3d8; /* hairline borders on paper */
+  --color-accent: #047857; /* emerald-700, muted/classic */
+  --color-accent-hover: #065f46; /* emerald-800 */
+  --color-accent-soft: #ecfdf5; /* emerald-50 wash */
+}
+
+/* Fonts are wired via next/font in app/layout.tsx; inline so the
+   runtime CSS variables resolve into the font-* utilities. */
+@theme inline {
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: #ffffff;
+}

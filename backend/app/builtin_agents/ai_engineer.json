@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "role_id": "ai_engineer",
+  "role_display_name": "AI Engineer",
+  "source": "built_in",
+  "generated_at": null,
+  "skills_order": [
+    "AI & ML",
+    "Programming Languages",
+    "Frameworks & Libraries",
+    "Cloud & DevOps",
+    "Databases & Storage",
+    "Core Competencies"
+  ],
+  "bullet_priority_strategy": "Lead with AI/ML bullets. Filter themes for AI, ML, LLM, RAG. Prioritize bullets that mention model deployment, fine-tuning, prompt engineering, inference pipelines, or evaluation metrics. Quantify with latency, accuracy, throughput, or user scale.",
+  "project_priority_strategy": "Lead with projects involving LLMs, RAG pipelines, AI-powered features, or ML model integration. Surface stack items like OpenAI, Azure OpenAI, LangChain, HuggingFace, vector databases.",
+  "summary_focus": "AI/ML engineering experience with LLMs, RAG systems, and production model deployment.",
+  "keywords_emphasis": [
+    "LLM", "RAG", "prompt engineering", "fine-tuning", "inference",
+    "vector database", "embeddings", "Azure OpenAI", "OpenAI", "HuggingFace",
+    "LangChain", "model deployment", "MLOps", "evaluation"
+  ],
+  "preferred_action_verbs": [
+    "Integrated", "Built", "Deployed", "Optimized", "Fine-tuned",
+    "Designed", "Implemented", "Reduced", "Improved", "Architected"
+  ]
+}

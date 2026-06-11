@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "role_id": "software_engineer",
+  "role_display_name": "Software Engineer",
+  "source": "built_in",
+  "generated_at": null,
+  "skills_order": [
+    "Programming Languages",
+    "Frameworks & Libraries",
+    "Databases & Storage",
+    "Cloud & DevOps",
+    "AI & ML",
+    "Core Competencies"
+  ],
+  "bullet_priority_strategy": "Lead with full-stack and backend engineering bullets. Filter themes for FS, BE, API, INFRA, CLOUD. Prioritize bullets that demonstrate system design, API design, performance improvements, or scalability wins. Quantify with request throughput, latency reduction, user count, or uptime.",
+  "project_priority_strategy": "Lead with projects that demonstrate full-stack depth or backend complexity. Surface modern stack items like React, Node.js, FastAPI, Docker, CI/CD.",
+  "summary_focus": "Full-stack software engineering experience with modern web technologies and cloud infrastructure.",
+  "keywords_emphasis": [
+    "REST API", "microservices", "Docker", "CI/CD", "React", "Node.js",
+    "PostgreSQL", "system design", "scalability", "TypeScript", "Python",
+    "FastAPI", "cloud", "distributed systems"
+  ],
+  "preferred_action_verbs": [
+    "Built", "Designed", "Implemented", "Reduced", "Improved",
+    "Architected", "Migrated", "Optimized", "Led", "Deployed"
+  ]
+}
