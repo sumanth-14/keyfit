@@ -21,14 +21,18 @@ class Settings(BaseSettings):
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _parse_cors_origins(cls, value: object) -> list[str]:
-        if not isinstance(value, str):
-            return value  # already a list (e.g. the default)
-        value = value.strip()
-        if not value:
-            return []
-        if value.startswith("["):
-            return json.loads(value)
-        return [origin.strip() for origin in value.split(",") if origin.strip()]
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return []
+            origins = json.loads(value) if value.startswith("[") else value.split(",")
+        else:
+            origins = value  # already a list (e.g. the default)
+        if not isinstance(origins, list):
+            return origins
+        # Browser Origin headers never carry a trailing slash, so strip any the
+        # operator left on a dashboard value — otherwise CORS silently fails.
+        return [o.strip().rstrip("/") for o in origins if str(o).strip()]
 
     temp_storage_dir: str = "/tmp/resume_tailor"
     temp_storage_ttl_seconds: int = 600
