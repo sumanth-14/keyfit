@@ -1,0 +1,39 @@
+# Render Blueprint — backend only (frontend stays on Vercel).
+# Deploy: Render Dashboard → New → Blueprint → pick the keyfit repo.
+# Render reads this file, provisions the service, and prompts for the
+# secret env vars marked `sync: false`.
+#
+# Monorepo note: we set an explicit dockerContext/dockerfilePath (both
+# relative to the repo root) instead of rootDir, so the Dockerfile's
+# `COPY requirements.txt .` / `COPY app/ ./app/` resolve against backend/.
+services:
+  - type: web
+    name: keyfit-backend
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: USE_MOCK_NIM
+        value: "false"
+      - key: NIM_BASE_URL
+        value: https://integrate.api.nvidia.com/v1
+      - key: TEMP_STORAGE_DIR
+        value: /tmp/resume_tailor
+      - key: TEMP_STORAGE_TTL_SECONDS
+        value: "600"
+      # Secrets + the Vercel-dependent URLs: entered in the Render dashboard,
+      # never committed. CORS_ORIGINS / GOOGLE_REDIRECT_URI start as
+      # placeholders, then get the real Vercel URL once the frontend is live.
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false

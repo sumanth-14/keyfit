@@ -73,7 +73,37 @@ The key is never stored — it lives only in the user's Zustand memory store.
 
 ---
 
-## Step 3 — Deploy Backend to Railway
+## Step 3 — Deploy Backend (choose Render OR Railway)
+
+> The backend needs a **persistent Docker container** (it runs `pdflatex` + `pdfinfo`),
+> so it cannot go on Vercel. Pick one host below. **Render** is the default since it has a
+> free tier and runs a single persistent instance — which matters because the compile flow
+> writes temp PDFs to local `/tmp` and serves them back by `pdf_id`; a single instance keeps
+> that filesystem consistent across requests.
+
+### Option A — Render (recommended, free tier)
+
+A `render.yaml` Blueprint lives at the repo root, so this is mostly one-click.
+
+1. Go to [render.com](https://render.com) → **New → Blueprint** → connect GitHub → pick the `keyfit` repo.
+2. Render reads `render.yaml`, creates the `keyfit-backend` web service (Docker, from `backend/Dockerfile`),
+   and prompts you for the four `sync: false` secret vars:
+
+   | Variable | Value (placeholder until Step 5) |
+   |----------|----------------------------------|
+   | `CORS_ORIGINS` | `["https://placeholder.vercel.app"]` |
+   | `GOOGLE_CLIENT_ID` | `...apps.googleusercontent.com` |
+   | `GOOGLE_CLIENT_SECRET` | `GOCSPX-...` |
+   | `GOOGLE_REDIRECT_URI` | `https://placeholder.vercel.app/callback` |
+
+   (The non-secret vars — `ENVIRONMENT=production`, `USE_MOCK_NIM=false`, etc. — are baked into `render.yaml`.)
+3. Apply → wait for the first build (LaTeX image is large, the first build takes a few minutes).
+4. Copy your service URL, e.g. `https://keyfit-backend.onrender.com`. The health check at `/health` must be green.
+
+> **Free-tier note:** the service sleeps after ~15 min idle; the first request after a nap takes
+> ~50s to wake. Fine for a 5–10 friend beta. Upgrade to a paid instance to keep it always-on.
+
+### Option B — Railway
 
 ### Create project
 
@@ -132,7 +162,7 @@ Copy your Vercel URL (e.g. `https://your-app.vercel.app`).
 
 ## Step 5 — Update CORS and OAuth redirect
 
-Go back to **Railway** and update two env vars with your real Vercel URL:
+Go back to your **backend host** (Render or Railway) and update two env vars with your real Vercel URL:
 
 ```
 CORS_ORIGINS=["https://your-app.vercel.app"]
