@@ -1,4 +1,8 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import json
+from typing import Annotated
+
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -9,7 +13,22 @@ class Settings(BaseSettings):
     )
 
     environment: str = "development"
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # NoDecode disables pydantic-settings' automatic JSON decoding of the raw
+    # env value, so the validator below can accept a JSON list, a comma-separated
+    # string, or a single bare URL — whichever way the host's dashboard saved it.
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _parse_cors_origins(cls, value: object) -> list[str]:
+        if not isinstance(value, str):
+            return value  # already a list (e.g. the default)
+        value = value.strip()
+        if not value:
+            return []
+        if value.startswith("["):
+            return json.loads(value)
+        return [origin.strip() for origin in value.split(",") if origin.strip()]
 
     temp_storage_dir: str = "/tmp/resume_tailor"
     temp_storage_ttl_seconds: int = 600
