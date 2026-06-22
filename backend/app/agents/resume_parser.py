@@ -85,6 +85,9 @@ class ResumeParserAgent(Agent):
         start, end = cleaned.find("{"), cleaned.rfind("}")
         if start != -1 and end > start:
             cleaned = cleaned[start : end + 1]
+        # Small models routinely emit trailing commas (e.g. `"x": 1,\n}`), which
+        # are invalid JSON. Drop any comma that directly precedes a } or ].
+        cleaned = re.sub(r",(\s*[}\]])", r"\1", cleaned)
         try:
             data = json.loads(cleaned)
         except json.JSONDecodeError as exc:
