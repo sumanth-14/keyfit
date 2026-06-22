@@ -18,7 +18,11 @@ class ResumeParserAgent(Agent):
 
     name = "resume_parser"
     temperature = 0.1
-    max_tokens = 2048
+    # A detailed resume's enriched JSON (themes/metrics/tech_stack per bullet)
+    # can run long — keep generous headroom so the JSON is never truncated
+    # mid-object (truncation -> invalid JSON -> parse failure). The small fast
+    # model generates these tokens quickly, so this stays well under the budget.
+    max_tokens = 4096
     # Fail fast: one shot, ~25s cap. Better a quick "try again" than a 4-minute
     # hang walking the default 4-attempt / 120s-per-attempt retry ladder.
     request_timeout = 25.0
@@ -74,10 +78,19 @@ class ResumeParserAgent(Agent):
         )
 
     def parse_response(self, raw: str) -> dict:
-        cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip())
+        # Small models sometimes wrap the JSON in markdown fences or a sentence
+        # of prose. Strip fences, then slice to the outermost { ... } so leading/
+        # trailing chatter doesn't break json.loads.
+        cleaned = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw.strip()).strip()
+        start, end = cleaned.find("{"), cleaned.rfind("}")
+        if start != -1 and end > start:
+            cleaned = cleaned[start : end + 1]
         try:
             data = json.loads(cleaned)
         except json.JSONDecodeError as exc:
+            # Log the raw model output (truncated) so production logs reveal
+            # whether it was truncated, prose-wrapped, or genuinely malformed.
+            logger.warning(f"resume_parser could not parse model output: {raw[:600]!r}")
             raise APIError(
                 ErrorCode.INTERNAL_ERROR,
                 "The AI returned an unexpected response while parsing your resume.",
