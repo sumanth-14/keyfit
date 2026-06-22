@@ -98,7 +98,10 @@ async def parse_from_resume(
 
     confidence_data = result.pop("extraction_confidence", {})
     flagged_raw = result.pop("flagged_fields", [])
-    raw_text = result.pop("raw_extracted_text", resume_text[:500])
+    # The prompt no longer asks the model to echo the resume back (that doubled
+    # generation time for no benefit) — we already have the source text here.
+    result.pop("raw_extracted_text", None)  # discard if an older model still echoes it
+    raw_text = resume_text
 
     profile = Profile.model_validate(result)
     confidence = ExtractionConfidence.model_validate(confidence_data)

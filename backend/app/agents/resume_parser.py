@@ -55,8 +55,7 @@ class ResumeParserAgent(Agent):
             '"skills": {"Category": ["skill1", "skill2"]}, '
             '"extraction_confidence": {"personal": 0.0-1.0, "education": 0.0-1.0, '
             '"experience": 0.0-1.0, "projects": 0.0-1.0, "skills": 0.0-1.0}, '
-            '"flagged_fields": [{"path": "str", "reason": "str"}], '
-            '"raw_extracted_text": "full verbatim text from resume"}'
+            '"flagged_fields": [{"path": "str", "reason": "str"}]}'
         )
 
     def user_prompt(self, resume_text: str, **_) -> str:

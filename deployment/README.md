@@ -101,7 +101,22 @@ A `render.yaml` Blueprint lives at the repo root, so this is mostly one-click.
 4. Copy your service URL, e.g. `https://keyfit-backend.onrender.com`. The health check at `/health` must be green.
 
 > **Free-tier note:** the service sleeps after ~15 min idle; the first request after a nap takes
-> ~50s to wake. Fine for a 5–10 friend beta. Upgrade to a paid instance to keep it always-on.
+> ~50s to wake. Upgrade to a paid instance to keep it always-on, or use the free keep-warm ping below.
+
+#### Keep the free instance warm (no upgrade)
+
+A cold start adds ~50–60s to whatever the user does first (e.g. parsing an uploaded résumé),
+which feels broken. To avoid it, ping `/health` on a schedule so the instance never sleeps:
+
+1. Sign up at [cron-job.org](https://cron-job.org) (free).
+2. Create a cron job:
+   - **URL:** `https://keyfit-backend.onrender.com/health`
+   - **Schedule:** every 10 minutes
+3. Save. The instance now stays awake.
+
+Render's free plan includes ~750 instance-hours/month — enough for one always-on service, so a
+single keep-warm service stays within the free allowance. The ping only prevents *idle sleep*; it
+does not change LLM latency.
 
 ### Option B — Railway
 

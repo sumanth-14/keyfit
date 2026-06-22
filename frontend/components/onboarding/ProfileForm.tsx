@@ -31,16 +31,20 @@ export default function ProfileForm({ initial, accessToken, nimKey, onSaved }: P
   const [profile, setProfile] = useState<Profile>(initial ?? EMPTY_PROFILE);
   const [saving, setSaving] = useState(false);
   const [parsing, setParsing] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setParsing(true);
+    setElapsed(0);
     setError(null);
     setParseWarnings([]);
+    timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
     try {
       const result = await parseFromResume(accessToken, nimKey, file);
       setProfile(result.profile);
@@ -49,6 +53,10 @@ export default function ProfileForm({ initial, accessToken, nimKey, onSaved }: P
       setError(err instanceof Error ? err.message : "Failed to parse resume.");
     } finally {
       setParsing(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
       // Reset input so same file can be re-uploaded
       if (fileRef.current) fileRef.current.value = "";
     }
@@ -83,7 +91,7 @@ export default function ProfileForm({ initial, accessToken, nimKey, onSaved }: P
           </div>
           <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-paper hover:text-ink">
             {parsing ? (
-              <><Loader2 size={14} className="animate-spin" /> Parsing…</>
+              <><Loader2 size={14} className="animate-spin" /> Parsing… {elapsed}s</>
             ) : (
               <><Upload size={14} /> Upload .tex</>
             )}
@@ -97,6 +105,13 @@ export default function ProfileForm({ initial, accessToken, nimKey, onSaved }: P
             />
           </label>
         </div>
+
+        {parsing && (
+          <p className="mt-3 text-xs text-ink-faint">
+            Reading your résumé and extracting your experience. The first upload can take up
+            to a minute while the server wakes up — later ones are faster.
+          </p>
+        )}
 
         {parseWarnings.length > 0 && (
           <ul className="mt-3 space-y-1">
