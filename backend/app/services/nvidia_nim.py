@@ -121,10 +121,20 @@ class NimClient:
                         retry_possible=True,
                     )
 
-                # Unexpected status
+                # Unexpected status (e.g. 400/422 request rejection) — log NIM's
+                # actual error body so we can see exactly why it was refused.
+                body_snippet = ""
+                try:
+                    body_snippet = resp.text[:500]
+                except Exception:
+                    pass
+                logger.warning(
+                    f"NIM unexpected status={resp.status_code} body={body_snippet!r}"
+                )
                 raise APIError(
                     ErrorCode.INTERNAL_ERROR,
                     f"Unexpected response from NIM: HTTP {resp.status_code}",
+                    technical_details=body_snippet,
                     retry_possible=True,
                 )
 

@@ -28,9 +28,9 @@ class ResumeParserAgent(Agent):
     # unparseable responses we saw. Still bounded (no multi-minute retry ladder).
     request_timeout = 90.0
     max_attempts = 1
-    # Constrain the model to syntactically valid JSON at decode time — small
-    # models otherwise emit trailing commas / fences / prose non-deterministically.
-    response_format = {"type": "json_object"}
+    # NOTE: response_format json_object was removed — it appears to cause an
+    # immediate request rejection on some NIM models (e.g. qwen2.5-7b). Qwen2.5
+    # adheres to JSON well on its own, and parse_response sanitizes stragglers.
 
     def __init__(self, nim_client: AnyNimClient, model: str = DEFAULT_MODEL) -> None:
         super().__init__(nim_client, model)
