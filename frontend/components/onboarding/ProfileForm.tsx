@@ -108,8 +108,8 @@ export default function ProfileForm({ initial, accessToken, nimKey, onSaved }: P
 
         {parsing && (
           <p className="mt-3 text-xs text-ink-faint">
-            Reading your résumé and extracting your experience. The first upload can take up
-            to a minute while the server wakes up — later ones are faster.
+            Reading your résumé and extracting your experience. This usually takes 10–40
+            seconds; please keep this tab open while it works.
           </p>
         )}
 

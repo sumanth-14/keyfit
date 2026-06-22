@@ -23,9 +23,10 @@ class ResumeParserAgent(Agent):
     # mid-object (truncation -> invalid JSON -> parse failure). The small fast
     # model generates these tokens quickly, so this stays well under the budget.
     max_tokens = 4096
-    # Fail fast: one shot, ~25s cap. Better a quick "try again" than a 4-minute
-    # hang walking the default 4-attempt / 120s-per-attempt retry ladder.
-    request_timeout = 25.0
+    # One shot with a generous 90s cap: free-tier generation of the full enriched
+    # JSON can take well over 25s, and cutting it off mid-output produced the
+    # unparseable responses we saw. Still bounded (no multi-minute retry ladder).
+    request_timeout = 90.0
     max_attempts = 1
     # Constrain the model to syntactically valid JSON at decode time — small
     # models otherwise emit trailing commas / fences / prose non-deterministically.

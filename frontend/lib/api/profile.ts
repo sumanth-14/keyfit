@@ -32,10 +32,10 @@ export async function parseFromResume(
   formData.append("file", file);
   formData.append("format", format);
 
-  // Hard client-side ceiling so the UI never hangs longer than the user will
-  // tolerate, even if the backend or network stalls. Backend caps itself at ~25s.
+  // Hard client-side ceiling so the UI never hangs indefinitely if the backend
+  // or network stalls. Sits just above the backend's own ~90s parse cap.
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 35_000);
+  const timeout = setTimeout(() => controller.abort(), 100_000);
 
   let response: Response;
   try {

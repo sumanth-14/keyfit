@@ -39,9 +39,10 @@ class Settings(BaseSettings):
 
     nim_base_url: str = "https://integrate.api.nvidia.com/v1"
     use_mock_nim: bool = False
-    # Resume parsing is mechanical extraction, not reasoning — a small fast model
-    # keeps it under the 30s UX budget. Override via env without a code change.
-    nim_parser_model: str = "meta/llama-3.1-8b-instruct"
+    # Resume parsing is structured extraction — Qwen2.5 adheres to JSON output
+    # markedly better than general-purpose Llama, and the 7B size keeps it fast.
+    # Override via env without a code change (e.g. to mistralai/mistral-small-24b-instruct).
+    nim_parser_model: str = "qwen/qwen2.5-7b-instruct"
 
     google_client_id: str = ""
     google_client_secret: str = ""
