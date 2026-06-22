@@ -27,6 +27,9 @@ class ResumeParserAgent(Agent):
     # hang walking the default 4-attempt / 120s-per-attempt retry ladder.
     request_timeout = 25.0
     max_attempts = 1
+    # Constrain the model to syntactically valid JSON at decode time — small
+    # models otherwise emit trailing commas / fences / prose non-deterministically.
+    response_format = {"type": "json_object"}
 
     def __init__(self, nim_client: AnyNimClient, model: str = DEFAULT_MODEL) -> None:
         super().__init__(nim_client, model)
@@ -91,9 +94,12 @@ class ResumeParserAgent(Agent):
         try:
             data = json.loads(cleaned)
         except json.JSONDecodeError as exc:
-            # Log the raw model output (truncated) so production logs reveal
-            # whether it was truncated, prose-wrapped, or genuinely malformed.
-            logger.warning(f"resume_parser could not parse model output: {raw[:600]!r}")
+            # Log length + head + tail so production logs disambiguate truncation
+            # (tail will be a dangling token) from a mid-output syntax error.
+            logger.warning(
+                f"resume_parser could not parse model output "
+                f"len={len(raw)} head={raw[:300]!r} tail={raw[-300:]!r}"
+            )
             raise APIError(
                 ErrorCode.INTERNAL_ERROR,
                 "The AI returned an unexpected response while parsing your resume.",

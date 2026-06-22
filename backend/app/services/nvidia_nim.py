@@ -34,6 +34,7 @@ class NimClient:
         agent_name: str = "",
         timeout: float | None = None,
         max_attempts: int | None = None,
+        response_format: dict | None = None,
     ) -> str:
         """Send a chat completion request and return the assistant message text.
 
@@ -43,6 +44,9 @@ class NimClient:
         `timeout` / `max_attempts` let a latency-sensitive caller (e.g. the resume
         parser, which must answer within a 30s UX budget) fail fast instead of
         walking the full default retry ladder. Both fall back to module defaults.
+
+        `response_format` is passed through to the API (e.g.
+        `{"type": "json_object"}` to constrain the model to valid JSON).
         """
         request_timeout = timeout if timeout is not None else _TIMEOUT_SECONDS
         attempt_budget = max_attempts if max_attempts is not None else _MAX_ATTEMPTS
@@ -55,6 +59,8 @@ class NimClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
+        if response_format is not None:
+            payload["response_format"] = response_format
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",

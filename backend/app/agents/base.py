@@ -20,6 +20,8 @@ class Agent(ABC):
     # latency-sensitive agent can tighten these to fail fast (see ResumeParserAgent).
     request_timeout: float | None = None
     max_attempts: int | None = None
+    # Optional API response_format, e.g. {"type": "json_object"} to force valid JSON.
+    response_format: dict | None = None
 
     def __init__(self, nim_client: AnyNimClient, model: str) -> None:
         self.nim = nim_client
@@ -48,5 +50,6 @@ class Agent(ABC):
             agent_name=self.name,
             timeout=self.request_timeout,
             max_attempts=self.max_attempts,
+            response_format=self.response_format,
         )
         return self.parse_response(raw)
