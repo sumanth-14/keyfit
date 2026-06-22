@@ -16,6 +16,10 @@ class Agent(ABC):
     name: str = ""  # stable agent id (used by MockNimClient to pick a canned response)
     temperature: float = 0.3
     max_tokens: int = 2048
+    # Per-call NIM budget. None → use the client's default retry ladder. A
+    # latency-sensitive agent can tighten these to fail fast (see ResumeParserAgent).
+    request_timeout: float | None = None
+    max_attempts: int | None = None
 
     def __init__(self, nim_client: AnyNimClient, model: str) -> None:
         self.nim = nim_client
@@ -42,5 +46,7 @@ class Agent(ABC):
             temperature=self.temperature,
             max_tokens=self.max_tokens,
             agent_name=self.name,
+            timeout=self.request_timeout,
+            max_attempts=self.max_attempts,
         )
         return self.parse_response(raw)

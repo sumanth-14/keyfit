@@ -32,12 +32,20 @@ class NimClient:
         temperature: float = 0.3,
         max_tokens: int = 2048,
         agent_name: str = "",
+        timeout: float | None = None,
+        max_attempts: int | None = None,
     ) -> str:
         """Send a chat completion request and return the assistant message text.
 
         `agent_name` is accepted for interface parity with MockNimClient (which
         uses it to pick a canned response) and is ignored by the real client.
+
+        `timeout` / `max_attempts` let a latency-sensitive caller (e.g. the resume
+        parser, which must answer within a 30s UX budget) fail fast instead of
+        walking the full default retry ladder. Both fall back to module defaults.
         """
+        request_timeout = timeout if timeout is not None else _TIMEOUT_SECONDS
+        attempt_budget = max_attempts if max_attempts is not None else _MAX_ATTEMPTS
         payload = {
             "model": model,
             "messages": [
@@ -54,9 +62,9 @@ class NimClient:
         url = f"{self._base_url}/chat/completions"
 
         last_exc: Exception | None = None
-        for attempt in range(1, _MAX_ATTEMPTS + 1):
+        for attempt in range(1, attempt_budget + 1):
             try:
-                async with httpx.AsyncClient(timeout=_TIMEOUT_SECONDS) as client:
+                async with httpx.AsyncClient(timeout=request_timeout) as client:
                     resp = await client.post(url, json=payload, headers=headers)
 
                 if resp.status_code == 200:
@@ -75,7 +83,7 @@ class NimClient:
                     logger.warning(
                         f"NIM rate limited attempt={attempt} waiting={wait}s"
                     )
-                    if attempt < _MAX_ATTEMPTS:
+                    if attempt < attempt_budget:
                         await asyncio.sleep(wait)
                         last_exc = APIError(
                             ErrorCode.NIM_RATE_LIMITED,
@@ -93,7 +101,7 @@ class NimClient:
                     logger.warning(
                         f"NIM server error status={resp.status_code} attempt={attempt}"
                     )
-                    if attempt < _MAX_ATTEMPTS:
+                    if attempt < attempt_budget:
                         await asyncio.sleep(10.0)
                         last_exc = APIError(
                             ErrorCode.NIM_MODEL_UNAVAILABLE,
@@ -117,7 +125,7 @@ class NimClient:
             except httpx.TimeoutException as exc:
                 logger.warning(f"NIM request timed out attempt={attempt}")
                 last_exc = exc
-                if attempt < _MAX_ATTEMPTS:
+                if attempt < attempt_budget:
                     continue  # one immediate retry on timeout
                 raise APIError(
                     ErrorCode.NIM_MODEL_UNAVAILABLE,

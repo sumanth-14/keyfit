@@ -22,6 +22,11 @@ services:
         value: "false"
       - key: NIM_BASE_URL
         value: https://integrate.api.nvidia.com/v1
+      # Fast model for resume parsing (must answer within the 30s UX budget).
+      # Bump to a larger model here if you want higher parse quality and can
+      # tolerate the extra latency — no redeploy of code needed.
+      - key: NIM_PARSER_MODEL
+        value: meta/llama-3.1-8b-instruct
       - key: TEMP_STORAGE_DIR
         value: /tmp/resume_tailor
       - key: TEMP_STORAGE_TTL_SECONDS

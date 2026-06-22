@@ -142,8 +142,11 @@ In Railway → your service → Variables, set:
 | `TEMP_STORAGE_DIR` | `/tmp/resume_tailor` | Default — Railway's `/tmp` is ephemeral but fine for 10-min temp files |
 | `TEMP_STORAGE_TTL_SECONDS` | `600` | 10 minutes |
 
-> **Note:** `NIM_MODEL` is not a config var — the model is hardcoded per agent as
-> `meta/llama-3.1-70b-instruct`. Change it in the agent files if you want a different model.
+> **Note on models:** the resume parser's model is configurable via the
+> `NIM_PARSER_MODEL` env var (default `meta/llama-3.1-8b-instruct`, chosen to keep
+> parsing under the 30s UX budget). The other agents (tailor, critic, outreach,
+> etc.) use `meta/llama-3.3-70b-instruct`, hardcoded in their agent files — change
+> it there if you want a different model for them.
 
 ### After deploy
 

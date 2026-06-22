@@ -2,12 +2,15 @@ import json
 import re
 
 from app.agents.base import Agent, AnyNimClient
+from app.config import settings
 from app.models.errors import APIError, ErrorCode
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-DEFAULT_MODEL = "meta/llama-3.3-70b-instruct"
+# Small fast model by default (config-overridable) — parsing must answer inside
+# the 30s UX budget, and extraction is mechanical enough not to need a 70B model.
+DEFAULT_MODEL = settings.nim_parser_model
 
 
 class ResumeParserAgent(Agent):
@@ -15,7 +18,11 @@ class ResumeParserAgent(Agent):
 
     name = "resume_parser"
     temperature = 0.1
-    max_tokens = 4096
+    max_tokens = 2048
+    # Fail fast: one shot, ~25s cap. Better a quick "try again" than a 4-minute
+    # hang walking the default 4-attempt / 120s-per-attempt retry ladder.
+    request_timeout = 25.0
+    max_attempts = 1
 
     def __init__(self, nim_client: AnyNimClient, model: str = DEFAULT_MODEL) -> None:
         super().__init__(nim_client, model)

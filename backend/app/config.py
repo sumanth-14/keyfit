@@ -39,6 +39,9 @@ class Settings(BaseSettings):
 
     nim_base_url: str = "https://integrate.api.nvidia.com/v1"
     use_mock_nim: bool = False
+    # Resume parsing is mechanical extraction, not reasoning — a small fast model
+    # keeps it under the 30s UX budget. Override via env without a code change.
+    nim_parser_model: str = "meta/llama-3.1-8b-instruct"
 
     google_client_id: str = ""
     google_client_secret: str = ""

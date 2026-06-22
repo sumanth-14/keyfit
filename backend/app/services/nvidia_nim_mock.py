@@ -133,6 +133,8 @@ class MockNimClient:
         temperature: float = 0.3,
         max_tokens: int = 2048,
         agent_name: str = "",
+        timeout: float | None = None,
+        max_attempts: int | None = None,
     ) -> str:
         key = agent_name.lower() if agent_name else (system.split()[0].lower() if system else "")
         response = _MOCK_RESPONSES.get(key, _DEFAULT_RESPONSE)
