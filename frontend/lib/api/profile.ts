@@ -26,8 +26,8 @@ export async function parseFromResume(
   accessToken: string,
   nimKey: string,
   file: File,
-  format = "tex",
 ): Promise<ParseFromResumeResponse> {
+  const format = file.name.toLowerCase().endsWith(".pdf") ? "pdf" : "tex";
   const formData = new FormData();
   formData.append("file", file);
   formData.append("format", format);

@@ -37,47 +37,35 @@ class ResumeParserAgent(Agent):
 
     def system_prompt(self) -> str:
         return (
-            "You extract structured professional profile data from resume text and produce "
-            "accurate, well-structured JSON that exactly matches the required schema.\n\n"
-            "ID generation rules:\n"
-            "- Experience IDs: exp_1, exp_2, ... (list newest job first, so exp_1 = most recent)\n"
-            "- Bullet IDs: exp_1_b1, exp_1_b2, ... (per experience, first bullet = top bullet)\n"
-            "- Project IDs: proj_1, proj_2, ...\n"
-            "- Education IDs: edu_1, edu_2, ...\n\n"
-            "For each bullet, extract:\n"
-            "- themes: 2-4 thematic tags (e.g. 'distributed systems', 'cost reduction', 'ml training')\n"
-            "- metrics: any quantified results (e.g. '40% latency reduction', '$2M ARR impact')\n"
-            "- tech_stack: specific tools/technologies mentioned in or implied by the bullet\n\n"
-            "Experience level (level field):\n"
-            "- L4 = most recent job, L3 = second most recent, L2, L1 = oldest\n\n"
-            "For visa_status.type use: citizen, green_card, h1b, opt, cpt, tn, other, or unknown\n"
-            "If visa status is not mentioned, set type to 'unknown' and needs_sponsorship to false.\n\n"
-            "Output ONLY valid JSON — no markdown fences, no prose.\n\n"
+            "You extract structured profile data from resume text into JSON. Copy the "
+            "content as written — do not invent, summarize, or embellish anything.\n\n"
+            "ID rules:\n"
+            "- Experience IDs: exp_1, exp_2, ... (newest job first, so exp_1 = most recent)\n"
+            "- Bullet IDs: exp_1_b1, exp_1_b2, ... (per experience, top bullet first)\n"
+            "- Project IDs: proj_1, proj_2, ...   Education IDs: edu_1, edu_2, ...\n"
+            "- level: L4 = most recent job, then L3, L2, L1 = oldest.\n\n"
+            "For visa_status.type use one of: citizen, green_card, h1b, opt, cpt, tn, other, "
+            "unknown. If not mentioned, use 'unknown' and needs_sponsorship false.\n\n"
+            "Output ONLY valid JSON — no markdown fences, no prose, no trailing commas.\n\n"
             "Required JSON schema:\n"
             '{"personal": {"name": "str", "email": "str", "phone": "str|null", '
             '"location": "str|null", "linkedin": "str|null", "github": "str|null", '
             '"portfolio": "str|null"}, '
-            '"visa_status": {"type": "str", "needs_sponsorship": bool, "stem_extension_eligible": bool}, '
+            '"visa_status": {"type": "str", "needs_sponsorship": bool}, '
             '"education": [{"id": "str", "degree": "str", "school": "str", "location": "str|null", '
             '"dates": "str|null", "gpa": "float|null"}], '
             '"experience": [{"id": "str", "title": "str", "company": "str", "location": "str|null", '
             '"dates": "str|null", "level": "L1|L2|L3|L4", '
-            '"bullets": [{"id": "str", "text": "str", "themes": ["str"], '
-            '"metrics": ["str"], "tech_stack": ["str"]}]}], '
+            '"bullets": [{"id": "str", "text": "str"}]}], '
             '"projects": [{"id": "str", "name": "str", "subtitle": "str|null", '
-            '"stack": ["str"], "themes": ["str"], "text": "str", "metrics": ["str"], '
-            '"url": "str|null"}], '
-            '"skills": {"Category": ["skill1", "skill2"]}, '
-            '"extraction_confidence": {"personal": 0.0-1.0, "education": 0.0-1.0, '
-            '"experience": 0.0-1.0, "projects": 0.0-1.0, "skills": 0.0-1.0}, '
-            '"flagged_fields": [{"path": "str", "reason": "str"}]}'
+            '"stack": ["str"], "text": "str", "url": "str|null"}], '
+            '"skills": {"Category": ["skill1", "skill2"]}}'
         )
 
     def user_prompt(self, resume_text: str, **_) -> str:
         return (
-            "Extract the complete professional profile from this resume. "
-            "Be thorough with bullet enrichment — populate themes, metrics, and tech_stack "
-            "for every bullet. Flag any fields that were guessed or unclear.\n\n"
+            "Extract the professional profile from this resume text into the required JSON. "
+            "Copy each bullet's wording accurately.\n\n"
             f"RESUME:\n{resume_text[:8000]}"
         )
 

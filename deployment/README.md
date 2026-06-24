@@ -142,12 +142,13 @@ In Railway → your service → Variables, set:
 | `TEMP_STORAGE_DIR` | `/tmp/resume_tailor` | Default — Railway's `/tmp` is ephemeral but fine for 10-min temp files |
 | `TEMP_STORAGE_TTL_SECONDS` | `600` | 10 minutes |
 
-> **Note on models:** the resume parser's model is configurable via the
-> `NIM_PARSER_MODEL` env var (default `qwen/qwen3-next-80b-a3b-instruct` — an MoE
-> instruct model with strong JSON adherence and fast inference). NVIDIA's catalog
-> changes over time, so if this id 404s, pick a current one from build.nvidia.com
-> and set the env var (no redeploy). The other agents (tailor, critic, outreach,
-> etc.) use `meta/llama-3.3-70b-instruct`, hardcoded in their agent files.
+> **Note on models:** resume upload uses deterministic text extraction first
+> (PDF via `pdftotext`, LaTeX via strip), then a lean AI step to structure the
+> text. That AI model is configurable via `NIM_PARSER_MODEL` (default
+> `meta/llama-3.1-8b-instruct`). NVIDIA's catalog changes over time, so if this id
+> 404s, pick a current one from build.nvidia.com and set the env var (no redeploy).
+> The other agents (tailor, critic, outreach, etc.) use `meta/llama-3.3-70b-instruct`,
+> hardcoded in their agent files.
 
 ### After deploy
 

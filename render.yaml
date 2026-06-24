@@ -22,11 +22,11 @@ services:
         value: "false"
       - key: NIM_BASE_URL
         value: https://integrate.api.nvidia.com/v1
-      # Model for resume parsing. Qwen3-Next-80B-A3B-Instruct: MoE (~3.9B active,
-      # so fast), instruct/non-thinking, strong JSON adherence. Swap here with no
-      # code change if the catalog changes.
+      # Model for resume parsing. With deterministic extraction + a leaner prompt,
+      # a small fast model suffices; llama-3.1-8b is proven-responsive on NIM.
+      # Swap here with no code change if the catalog changes.
       - key: NIM_PARSER_MODEL
-        value: qwen/qwen3-next-80b-a3b-instruct
+        value: meta/llama-3.1-8b-instruct
       - key: TEMP_STORAGE_DIR
         value: /tmp/resume_tailor
       - key: TEMP_STORAGE_TTL_SECONDS

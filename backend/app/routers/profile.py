@@ -11,6 +11,7 @@ from app.models.profile import (
     ProfileSaveResponse,
 )
 from app.services.google_drive import GoogleDriveClient
+from app.services.resume_text_extractor import extract_resume_text
 from app.utils.logging import get_logger, set_trace_id
 
 from app.agents.base import AnyNimClient
@@ -83,15 +84,9 @@ async def parse_from_resume(
     logger.info(f"POST /api/profile/parse-from-resume format={format} trace_id={trace_id}")
 
     content = await file.read()
-    try:
-        resume_text = content.decode("utf-8", errors="replace")
-    except Exception as exc:
-        raise APIError(
-            ErrorCode.INTERNAL_ERROR,
-            "Could not read the uploaded file.",
-            technical_details=str(exc),
-            retry_possible=False,
-        ) from exc
+    # Deterministic text extraction first (PDF via pdftotext, LaTeX via strip);
+    # the AI only structures the resulting plain text.
+    resume_text = await extract_resume_text(content, format)
 
     agent = ResumeParserAgent(nim_client=nim)
     result = await agent.run(resume_text=resume_text)

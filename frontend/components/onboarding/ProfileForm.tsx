@@ -85,20 +85,21 @@ export default function ProfileForm({ initial, accessToken, nimKey, onSaved }: P
               Import from existing résumé
             </p>
             <p className="mt-0.5 text-xs text-ink-faint">
-              Upload your <span className="font-mono">.tex</span> file and the AI will pre-fill
-              the form. You can edit afterwards.
+              Upload your <span className="font-mono">.pdf</span> or{" "}
+              <span className="font-mono">.tex</span> file and the AI will pre-fill the form.
+              You can edit afterwards.
             </p>
           </div>
           <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-line px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-paper hover:text-ink">
             {parsing ? (
               <><Loader2 size={14} className="animate-spin" /> Parsing… {elapsed}s</>
             ) : (
-              <><Upload size={14} /> Upload .tex</>
+              <><Upload size={14} /> Upload .pdf / .tex</>
             )}
             <input
               ref={fileRef}
               type="file"
-              accept=".tex"
+              accept=".tex,.pdf"
               onChange={handleFileChange}
               disabled={parsing}
               className="hidden"

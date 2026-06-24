@@ -39,10 +39,10 @@ class Settings(BaseSettings):
 
     nim_base_url: str = "https://integrate.api.nvidia.com/v1"
     use_mock_nim: bool = False
-    # Resume parsing is structured extraction. Qwen3-Next-80B-A3B is an MoE model
-    # (~3.9B active params -> fast) in instruct/non-thinking mode, so it emits
-    # clean JSON with no <think> blocks. Override via env without a code change.
-    nim_parser_model: str = "qwen/qwen3-next-80b-a3b-instruct"
+    # Parser model. With deterministic text extraction + a leaner prompt, the AI
+    # only structures clean text, so a small fast model suffices. llama-3.1-8b is
+    # proven-responsive on NIM. Override via env without a code change.
+    nim_parser_model: str = "meta/llama-3.1-8b-instruct"
 
     google_client_id: str = ""
     google_client_secret: str = ""
