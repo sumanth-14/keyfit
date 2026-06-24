@@ -143,10 +143,11 @@ In Railway → your service → Variables, set:
 | `TEMP_STORAGE_TTL_SECONDS` | `600` | 10 minutes |
 
 > **Note on models:** the resume parser's model is configurable via the
-> `NIM_PARSER_MODEL` env var (default `qwen/qwen2.5-7b-instruct`, chosen for its
-> strong JSON-output adherence and speed). The other agents (tailor, critic,
-> outreach, etc.) use `meta/llama-3.3-70b-instruct`, hardcoded in their agent
-> files — change it there if you want a different model for them.
+> `NIM_PARSER_MODEL` env var (default `qwen/qwen3-next-80b-a3b-instruct` — an MoE
+> instruct model with strong JSON adherence and fast inference). NVIDIA's catalog
+> changes over time, so if this id 404s, pick a current one from build.nvidia.com
+> and set the env var (no redeploy). The other agents (tailor, critic, outreach,
+> etc.) use `meta/llama-3.3-70b-instruct`, hardcoded in their agent files.
 
 ### After deploy
 

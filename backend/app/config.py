@@ -39,10 +39,10 @@ class Settings(BaseSettings):
 
     nim_base_url: str = "https://integrate.api.nvidia.com/v1"
     use_mock_nim: bool = False
-    # Resume parsing is structured extraction — Qwen2.5 adheres to JSON output
-    # markedly better than general-purpose Llama, and the 7B size keeps it fast.
-    # Override via env without a code change (e.g. to mistralai/mistral-small-24b-instruct).
-    nim_parser_model: str = "qwen/qwen2.5-7b-instruct"
+    # Resume parsing is structured extraction. Qwen3-Next-80B-A3B is an MoE model
+    # (~3.9B active params -> fast) in instruct/non-thinking mode, so it emits
+    # clean JSON with no <think> blocks. Override via env without a code change.
+    nim_parser_model: str = "qwen/qwen3-next-80b-a3b-instruct"
 
     google_client_id: str = ""
     google_client_secret: str = ""

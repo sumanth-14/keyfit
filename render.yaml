@@ -22,11 +22,11 @@ services:
         value: "false"
       - key: NIM_BASE_URL
         value: https://integrate.api.nvidia.com/v1
-      # Model for resume parsing. Qwen2.5-7B follows JSON output far more
-      # reliably than general Llama and is fast. Swap here (e.g. to
-      # mistralai/mistral-small-24b-instruct) with no code change.
+      # Model for resume parsing. Qwen3-Next-80B-A3B-Instruct: MoE (~3.9B active,
+      # so fast), instruct/non-thinking, strong JSON adherence. Swap here with no
+      # code change if the catalog changes.
       - key: NIM_PARSER_MODEL
-        value: qwen/qwen2.5-7b-instruct
+        value: qwen/qwen3-next-80b-a3b-instruct
       - key: TEMP_STORAGE_DIR
         value: /tmp/resume_tailor
       - key: TEMP_STORAGE_TTL_SECONDS
