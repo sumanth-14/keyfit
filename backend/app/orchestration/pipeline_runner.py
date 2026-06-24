@@ -96,6 +96,7 @@ class PipelineRunner:
                 job_id,
                 request,
                 root_id,
+                profile,
                 final_latex,
                 pdf_bytes,
                 critique,
@@ -441,6 +442,7 @@ class PipelineRunner:
         job_id: str,
         request: PipelineRequest,
         root_id: str,
+        profile: Profile,
         latex_source: str,
         pdf_bytes: bytes,
         critique: Critique,
@@ -452,27 +454,41 @@ class PipelineRunner:
         try:
             app_id = f"app_{uuid.uuid4().hex[:8]}"
             now = datetime.now(timezone.utc)
-            short_uuid = uuid.uuid4().hex[:4]
-            safe_company = "".join(c if c.isalnum() else "" for c in request.company_name)[:20]
-            safe_role = "".join(c if c.isalnum() else "" for c in request.role_title)[:10]
-            folder_name = f"{now.date()}_{safe_company}_{safe_role}_{short_uuid}"
+
+            safe_company = "".join(c for c in request.company_name if c.isalnum())[:30] or "Company"
+            safe_role = "".join(c for c in request.role_title if c.isalnum())[:30] or "Role"
+            full_name = (profile.personal.name or "").strip()
+            first_name = full_name.split()[0] if full_name else "Resume"
+            safe_first = "".join(c for c in first_name if c.isalnum()) or "Resume"
+
+            # Human-readable resume filename: FirstName_Company_Role.pdf
+            resume_base = f"{safe_first}_{safe_company}_{safe_role}"
+            tex_name = f"{resume_base}.tex"
+            pdf_name = f"{resume_base}.pdf"
 
             apps_folder_id = await self.drive.find_folder("applications", parent_id=root_id)
             if not apps_folder_id:
                 apps_folder_id, _ = await self.drive.ensure_folder("applications", parent_id=root_id)
 
+            # Folder: Company-MM-DD-YYYY, with a short suffix only if that exact
+            # folder already exists (so a second same-day application doesn't
+            # overwrite the first).
+            folder_base = f"{safe_company}-{now.strftime('%m-%d-%Y')}"
+            existing = await self.drive.find_folder(folder_base, parent_id=apps_folder_id)
+            folder_name = folder_base if not existing else f"{folder_base}-{uuid.uuid4().hex[:4]}"
+
             app_folder_id, _ = await self.drive.ensure_folder(folder_name, parent_id=apps_folder_id)
 
-            # Write resume_v1.tex
+            # Write the .tex source
             await self.drive.upload_bytes(
-                "resume_v1.tex",
+                tex_name,
                 latex_source.encode("utf-8"),
                 "text/plain",
                 parent_id=app_folder_id,
             )
-            # Write resume_v1.pdf
+            # Write the compiled .pdf
             await self.drive.upload_bytes(
-                "resume_v1.pdf",
+                pdf_name,
                 pdf_bytes,
                 "application/pdf",
                 parent_id=app_folder_id,
@@ -503,8 +519,8 @@ class PipelineRunner:
                         verdict=critique.verdict,
                         color=Critique.color_for_score(critique.total),
                         files=ApplicationVersionFiles(
-                            tex="resume_v1.tex",
-                            pdf="resume_v1.pdf",
+                            tex=tex_name,
+                            pdf=pdf_name,
                             critique="critique_v1.json",
                         ),
                     )
