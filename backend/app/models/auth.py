@@ -19,3 +19,12 @@ class OAuthCallbackResponse(BaseModel):
     expires_in: int
     user_email: str
     tailor_folder_exists: bool
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshResponse(BaseModel):
+    access_token: str
+    expires_in: int

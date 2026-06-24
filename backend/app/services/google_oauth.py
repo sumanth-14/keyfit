@@ -60,12 +60,55 @@ class GoogleOAuthService:
         auth_url, _ = flow.authorization_url(
             state=state,
             access_type="offline",
-            prompt="consent",
+            # No forced prompt="consent": returning users skip the consent screen.
+            # The refresh token from their first authorization is reused via the
+            # /auth/google/refresh endpoint, so sessions persist without re-consent.
             include_granted_scopes="true",
             code_challenge=code_challenge,
             code_challenge_method="S256",
         )
         return auth_url, code_verifier
+
+    async def refresh_access_token(self, refresh_token: str) -> tuple[str, int]:
+        """Exchange a refresh token for a fresh access token. Returns (token, expires_in)."""
+        if not self.client_id:
+            raise APIError(
+                ErrorCode.INTERNAL_ERROR,
+                "Google OAuth is not configured.",
+            )
+
+        async with httpx.AsyncClient() as client:
+            try:
+                resp = await client.post(
+                    "https://oauth2.googleapis.com/token",
+                    data={
+                        "client_id": self.client_id,
+                        "client_secret": self.client_secret,
+                        "refresh_token": refresh_token,
+                        "grant_type": "refresh_token",
+                    },
+                    timeout=10,
+                )
+            except Exception as exc:
+                logger.warning(f"Token refresh request failed: {exc}")
+                raise APIError(
+                    ErrorCode.DRIVE_AUTH_EXPIRED,
+                    "Could not refresh your session. Please sign in again.",
+                    retry_possible=True,
+                ) from exc
+
+        if resp.status_code != 200:
+            logger.warning(
+                f"Token refresh rejected status={resp.status_code} body={resp.text[:200]!r}"
+            )
+            raise APIError(
+                ErrorCode.DRIVE_AUTH_EXPIRED,
+                "Your session has expired. Please sign in again.",
+                retry_possible=False,
+            )
+
+        data = resp.json()
+        return data["access_token"], data.get("expires_in", 3599)
 
     async def exchange_code(self, code: str, code_verifier: str) -> OAuthCallbackResponse:
         """Exchange an authorization code for tokens and fetch the user's email."""

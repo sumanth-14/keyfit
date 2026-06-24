@@ -32,6 +32,7 @@ def mock_oauth() -> MagicMock:
             tailor_folder_exists=False,
         )
     )
+    svc.refresh_access_token = AsyncMock(return_value=("ya29.new_token", 3599))
     return svc
 
 
@@ -127,5 +128,39 @@ class TestGoogleCallback:
                 "/api/auth/google/callback",
                 json={"code": "bad_code", "state": "abc", "code_verifier": "v"},
             )
+        assert resp.status_code == 400
+        assert resp.json()["error"]["code"] == "DRIVE_AUTH_EXPIRED"
+
+
+# ── POST /api/auth/google/refresh ─────────────────────────────────────────────
+
+class TestRefresh:
+    async def test_returns_new_access_token(self, client):
+        resp = await client.post(
+            "/api/auth/google/refresh",
+            json={"refresh_token": "1//test_refresh"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["access_token"] == "ya29.new_token"
+        assert data["expires_in"] == 3599
+
+    async def test_missing_refresh_token_returns_422(self, client):
+        resp = await client.post("/api/auth/google/refresh", json={})
+        assert resp.status_code == 422
+
+    async def test_expired_refresh_token_returns_400(self, client, mock_oauth):
+        from app.models.errors import APIError, ErrorCode
+        mock_oauth.refresh_access_token = AsyncMock(
+            side_effect=APIError(
+                ErrorCode.DRIVE_AUTH_EXPIRED,
+                "Your session has expired. Please sign in again.",
+                retry_possible=False,
+            )
+        )
+        resp = await client.post(
+            "/api/auth/google/refresh",
+            json={"refresh_token": "1//revoked"},
+        )
         assert resp.status_code == 400
         assert resp.json()["error"]["code"] == "DRIVE_AUTH_EXPIRED"

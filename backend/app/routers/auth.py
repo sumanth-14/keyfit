@@ -3,7 +3,13 @@ import secrets
 from fastapi import APIRouter, Depends
 
 from app.deps import get_oauth_service
-from app.models.auth import AuthUrlResponse, OAuthCallbackRequest, OAuthCallbackResponse
+from app.models.auth import (
+    AuthUrlResponse,
+    OAuthCallbackRequest,
+    OAuthCallbackResponse,
+    RefreshRequest,
+    RefreshResponse,
+)
 from app.services.google_drive import make_drive_client
 from app.services.google_oauth import GoogleOAuthService
 from app.utils.logging import get_logger, set_trace_id
@@ -44,3 +50,13 @@ async def google_callback(
         f"email={token_data.user_email} folder_exists={token_data.tailor_folder_exists}"
     )
     return token_data
+
+
+@router.post("/auth/google/refresh", response_model=RefreshResponse)
+async def refresh_access_token(
+    request: RefreshRequest,
+    oauth: GoogleOAuthService = Depends(get_oauth_service),
+) -> RefreshResponse:
+    """Mint a fresh access token from a stored refresh token (keeps sessions alive)."""
+    access_token, expires_in = await oauth.refresh_access_token(request.refresh_token)
+    return RefreshResponse(access_token=access_token, expires_in=expires_in)
